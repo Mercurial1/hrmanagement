@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"      
+ "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="com.syh.mchr.mapper.EmpMapper">
+
+	<!-- 根据用户名查询员工数据 -->
+    <!-- User findByEid(Integer eid) -->
+	<select id="findByEid"
+        resultType="com.syh.mchr.entity.Emp">
+        SELECT 
+            eno,ename,
+            gender,
+            address,phone,
+            email,nation,
+            deptno,jobno,
+            hiredate,birthday,
+            mgr,sal,
+            IDcard,photo,isDelete,
+            created_user as createdUser, created_time as createdTime,
+            modified_user as modifiedUser,modified_time as modifiedTime
+        FROM 
+            emp 
+        WHERE 
+            eid=#{eid}
+    </select>
+    
+    <!-- 根据工号查询员工数据 -->
+    <!-- User findByEno(String eno) -->
+	<select id="findByEno"
+        resultType="com.syh.mchr.entity.Emp">
+        SELECT 
+            eno,ename,
+            gender,
+            address,phone,
+            email,nation,
+            deptno,jobno,
+            hiredate,birthday,
+            mgr,sal,
+            IDcard,photo,isDelete,
+            created_user as createdUser, created_time as createdTime,
+            modified_user as modifiedUser,modified_time as modifiedTime
+        FROM 
+            emp 
+        WHERE 
+            eno=#{eno}
+    </select>
+    
+    <!-- 根据用户名查询员工数据 -->
+    <!-- User findByIDcard(String iDcard) -->
+	<select id="findByIDcard"
+        resultType="com.syh.mchr.entity.Emp">
+        SELECT 
+            eno,ename,
+            gender,
+            address,phone,
+            email,nation,
+            deptno,jobno,
+            hiredate,birthday,
+            mgr,sal,
+            IDcard,photo,isDelete,
+            created_user as createdUser, created_time as createdTime,
+            modified_user as modifiedUser,modified_time as modifiedTime
+        FROM 
+            emp 
+        WHERE 
+            IDcard=#{IDcard}
+    </select>
+    
+    <select id="findAll"
+        resultType="com.syh.mchr.entity.Emp">
+        SELECT 
+            eno,ename,
+            gender,
+            address,phone,
+            email,nation,
+            deptno,jobno,
+            hiredate,birthday,
+            mgr,sal,
+            IDcard,photo,isDelete,
+            created_user as createdUser, created_time as createdTime,
+            modified_user as modifiedUser,modified_time as modifiedTime
+        FROM 
+            emp 
+    </select>
+    
+    <!-- 更新用户的头像 -->
+	<!-- Integer updatePhoto(
+	        @Param("uid") Integer uid, 
+	        @Param("photo") String photo,
+	        @Param("modifiedUser") String modifiedUser,
+	        @Param("modifiedTime") Date modifiedTime); -->
+	<update id="updatePhoto">
+	    UPDATE 
+	        emp 
+	    SET 
+	        photo=#{photo}, 
+	        modified_user=#{modifiedUser}, 
+	        modified_time=#{modifiedTime} 
+	    WHERE 
+	        eid=#{eid}
+	</update>
+	
+	<!-- 更新用户信息 -->
+	<!-- Integer UpdateInfo(@Param("eno")String eno,@Param("ename")String ename,@Param("gender")Integer gender,@Param("address")String address,
+	 @Param("phone")String phone,@Param("email")String email,@Param("nation")String nation,@Param("mgr")String mgr,
+	 @Param("sal")Double sal,@Param("deptno")Integer deptno,@Param("jobno")Integer jobno,@Param("hiredate") Date hiredate,
+	 @Param("birthday")Date birthday,@Param("IDcard")String IDcard,@Param("modifiedUser") String modifiedUser,
+     @Param("modifiedTime") Date modifiedTime) -->
+     <update id="UpdateInfo">
+     	update 
+     		emp 
+     	set 
+     		ename=#{ename},gender=#{gender},address=#{address},
+     		phone=#{phone},email=#{email},nation=#{nation},
+     		mgr=#{mgr},sal=#{sal},deptno=#{deptno},jobno=#{jobno},
+     		hiredate=#{hiredate},birthday=#{birthday},IDcard=#{Idcard},
+     		modified_user=#{modifiedUser}, 
+	        modified_time=#{modifiedTime} 
+	    where 
+	    	eno=#{eno}
+     </update>
+    
+    
+    
+</mapper>

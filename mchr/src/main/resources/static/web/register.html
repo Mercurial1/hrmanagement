@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<script type="text/javascript" src="../bootstrap3/jquery-1.8.3.min.js"></script>
+<script type="text/javascript" src="../bootstrap3/jquery-1.9.1.min.js"></script>
+
+</head>
+<body>
+	<form id="form-reg">
+		<p>用户名:<input type="text" name="username">
+		<p>密码:<input type="text" name="password">
+		<p>是否为管理员:<input type="radio" name="isadmin" value="1">是<input type="radio" name="isadmin" value="0">否
+		<p>员工姓名:<input type="text" name="ename">
+		<p>性别:<input type="radio" name="gender" value="1">男<input type="radio" name="gender" value="0">女
+		<p>地址:<input type="text" name="address">
+		<p>电话号码:<input type="text" name="phone">
+		<p>邮箱:<input type="text" name="email">
+		<p>民族:<input type="text" name="nation">
+		<p>领导工号:<input type="text" name="mgr">
+		<p>薪水:<input type="text" name="sal">
+		<p>部门:<select id="deptno" name="deptno">
+			<option selected="selected" value="0">请选择</option>
+		</select>
+		<p>职位:<select id="jobno" name="jobno">
+			<option selected="selected">请选择</option>
+		</select>
+		<p>入职日期:<input type="date" name="hiredate1">
+		<p>生日:<input type="date" name="birthday1">
+		<p>身份证号码:<input type="text" name="IDcard">
+		<p><input id="btn-reg" type="button" value="提交">
+	</form>
+	<script type="text/javascript">
+		$(document).ready(function(){
+			$.ajax({
+				"url":"/users/isadmin",
+				"data":"",
+				"type":"post",
+				"dataType":"json",
+				"success":function(json){
+					if(json.state==2000){
+						alert("你好管理员")
+					}else{
+						alert("无管理员权限")
+						location.href="/web/index.html"
+					}
+				},
+				"error":function(){
+					alert("登录超时,请重新登录")
+					location.href="/web/login.html"
+				}
+			})
+			$.ajax({
+				"url":"/dept/list",
+				"data":"",
+				"type":"get",
+				"dataType":"json",
+				"success":function(json){
+					if(json.state==2000){
+						var arr=json.data;
+						for(var i=0;i<json.data.length;i++){
+							var option=$("<option value='"+arr[i].deptno+"'>"+arr[i].dname+"</option>")
+							$("#deptno").append(option)
+						}
+					}
+				}
+			})
+			$("#deptno").change(function(){
+				$("#jobno").empty()
+				var option=$("<option selected='selected'>请选择</option>")
+				$("#jobno").append(option)
+				$.ajax({
+					"url":"/dept/job",
+					"data":"deptno="+$("#deptno").val(),
+					"type":"post",
+					"dataType":"json",
+					"success":function(json){
+						if(json.state==2000){
+							var arr=json.data;
+							for(var i=0;i<json.data.length;i++){
+								var option=$("<option value='"+arr[i].jobno+"'>"+arr[i].jobname+"</option>")
+								$("#jobno").append(option)
+							}
+						}
+					}
+				})
+			})
+			
+			$("#btn-reg").click(function(){
+				$.ajax({
+					"url":"/users/reg",
+					"data":$("#form-reg").serialize(),
+					"type":"post",
+					"dataType":"json",
+					"success":function(json){
+						if(json.state==2000){
+							alert("注册成功")
+						}else{
+							alert(json.message)
+						}
+					}
+				})
+				/* $.ajax({
+					"url":"/users/change_photo",
+					"data":new FormData($("#form-reg-photo")[0]),
+					"contentType":false,
+					"processData":false,
+					"type":"post",
+					"dataType":"json",
+					"success":function(json){
+						if(json.state==2000){
+							alert("注册成功")
+						}else{
+							alert(json.message)
+						} 
+					}
+				}) */
+			})
+		})
+	</script>
+</body>
+</html>

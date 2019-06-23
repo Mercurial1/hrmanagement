@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"      
+ "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="com.syh.mchr.mapper.UEMapper">
+
+    <!-- 插入用户数据 -->
+    <!-- Integer insertUser(User user) -->
+    <insert id="insertUser" >
+        INSERT INTO user (
+            username, password,
+            salt,isadmin,
+            created_user, created_time,
+            modified_user,modified_time
+        ) VALUES (
+            #{username}, #{password},
+            #{salt},#{isadmin},
+            #{createdUser}, #{createdTime},
+            #{modifiedUser}, #{modifiedTime}
+        );
+        
+    </insert>
+    
+    <!-- 插入员工数据 -->
+    <!-- Integer insertEmp(Emp emp) -->
+    <insert id="insertEmp" >
+        INSERT INTO emp (
+            eno,ename,
+            gender,
+            address,phone,
+            email,nation,
+            deptno,jobno,
+            hiredate,birthday,
+            mgr,sal,
+            IDcard,photo,isDelete,
+            created_user, created_time,
+            modified_user,modified_time
+        ) VALUES (
+            #{eno},#{ename},
+            #{gender},
+            #{address},#{phone},
+            #{email},#{nation},
+            #{deptno},#{jobno},
+            #{hiredate},#{birthday},
+            #{mgr},#{sal},
+            #{IDcard},#{photo},#{isDelete},
+            #{createdUser}, #{createdTime},#{modifiedUser},
+            #{modifiedTime}
+        )
+    </insert>
+    
+</mapper>

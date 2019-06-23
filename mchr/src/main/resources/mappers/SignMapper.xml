@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"      
+ "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="com.syh.mchr.mapper.SignMapper">
+
+    
+    <!-- 根据员工工号日期查询签到信息 -->
+    <!-- List<Sign> findByDate(@Param("eno")String eno,@Param("begin")Date begin,@Param("end")Date end); -->
+	<select id="findByDate"
+        resultType="com.syh.mchr.entity.Sign">
+        SELECT 
+            eno,date,signInTime,signOutTime,signState,status
+        FROM 
+            sign 
+        WHERE 
+            eno=#{eno} and date between #{begin} and #{end}
+    </select>
+    <select id="findByDay"
+        resultType="com.syh.mchr.entity.Sign">
+        SELECT 
+            eno,date,signInTime,signOutTime,signState,status
+        FROM 
+            sign 
+        WHERE 
+            eno=#{eno} and date=date(#{date})
+    </select>
+    
+    <!-- 插入签到信息 -->
+    <!-- Integer InsertSignIn(Sign sign) -->
+    <insert id="InsertSignIn">
+    	INSERT INTO 
+    		sign(eno,date,status)
+    	VALUES
+    		(#{eno},#{date},4)
+    </insert>
+    
+    <!-- 更新签到信息 -->
+    <!-- Integer UpdateSignIn(eno,date,signInTime,signOutTime,status) -->
+    <update id="UpdateSignIn">
+    	update 
+    		sign 
+    	set 
+    		<if test="signInTime!=null">signInTime=#{signInTime},</if>
+    		<if test="signOutTime!=null">signOutTime=#{signOutTime},</if>
+    		status=#{status} 
+    	where 
+    		date=date(#{date}) and eno=#{eno}
+    </update>
+	
+</mapper>

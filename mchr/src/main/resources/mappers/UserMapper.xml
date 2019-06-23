@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"      
+ "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="com.syh.mchr.mapper.UserMapper">
+
+	<!-- 根据用户id查询用户数据 -->
+    <!-- User findByUid(Integer uid) -->
+	<select id="findByUid"
+        resultType="com.syh.mchr.entity.User">
+        SELECT 
+            password,salt,uid,isadmin
+        FROM 
+            user 
+        WHERE 
+            uid=#{uid}
+    </select>
+    
+    <!-- 根据用户id查询用户数据 -->
+    <!-- User findByUsername(String username) -->
+	<select id="findByUsername"
+        resultType="com.syh.mchr.entity.User">
+        SELECT 
+            password, salt,uid,isadmin
+        FROM 
+            user 
+        WHERE 
+            username=#{username}
+    </select>
+	
+</mapper>

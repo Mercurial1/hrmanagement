@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+<script type="text/javascript" src="../bootstrap3/jquery-1.8.3.min.js"></script>
+<script type="text/javascript" src="../bootstrap3/jquery-1.9.1.min.js"></script>
+</head>
+<body>
+	<input id="btn-gg" type="button" value="公告">
+	<input id='btn-info' type='button' value='查询'  style="display: none;">
+	<form id="form-change">
+		<p>员工姓名:<input type="text" name="ename">
+		<p>性别:<input type="radio" name="gender" value="1">男<input type="radio" name="gender" value="0">女
+		<p>地址:<input type="text" name="address">
+		<p>电话号码:<input type="text" name="phone">
+		<p>邮箱:<input type="text" name="email">
+		<p>民族:<input type="text" name="nation">
+		<p>领导工号:<input type="text" name="mgr">
+		<p>薪水:<input type="text" name="sal">
+		<p>部门:<select id="deptno" name="deptno">
+			<option selected="selected" value="0">请选择</option>
+		</select>
+		<p>职位:<select id="jobno" name="jobno">
+			<option selected="selected">请选择</option>
+		</select>
+		<p>入职日期:<input type="date" name="hiredate1">
+		<p>生日:<input type="date" name="birthday1">
+		<p>身份证号码:<input type="text" name="IDcard">
+		<p><input id="btn-change" type="button" value="提交修改">
+	</form>
+	<form id="form-subevent">
+		开始日期:<input name="vacationBegin1" type="date">
+		结束时间:<input name="vacationEnd1" type="date">
+		请假事由:<input name="vacationReason" type="text">
+		<input id="btn-subevent" type="button" value="提交事务">
+	</form>
+	
+	<form id="form-myevent">
+		事务状态:<select name="status">
+			<option value="0">待处理</option>
+			<option value="1">已批准</option>
+			<option value="2">已拒绝</option>
+			<option value="3" selected="selected">全部</option>
+		</select>
+		开始日期:<input name="begin" type="date">
+		结束时间:<input name="end" type="date">
+		<input id="btn-myevent" type="button" value="我提交的事务">
+	</form>	
+	
+	<form id="form-conevent">
+		员工工号:<input type="text" name="eno">
+		开始日期:<input name="begin" type="date">
+		结束时间:<input name="end" type="date">
+		<input id="btn-conevent" type="button" value="待审批事务">
+	</form>
+	
+	<input type="button" value="签到" onclick="sign(1)">
+	<input type="button" value="签退" onclick="sign(2)">
+	<form id="form-signlist">
+		开始日期:<input name="begin" type="date">
+		结束时间:<input name="end" type="date">
+		<input id="btn-signlist" type="button" value="签到情况">
+	</form>
+	
+	<script type="text/javascript">
+		$(document).ready(function(){
+			//查询用户是否为管理员
+			$.ajax({
+				"url":"/users/isadmin",
+				"data":"",
+				"type":"post",
+				"dataType":"json",
+				"success":function(json1){
+					//加载两个下拉框
+					$.ajax({
+						"url":"/dept/list",
+						"data":"",
+						"type":"get",
+						"dataType":"json",
+						"success":function(json){
+							if(json.state==2000){
+								var arr=json.data;
+								for(var i=0;i<json.data.length;i++){
+									var option=$("<option value='"+arr[i].deptno+"'>"+arr[i].dname+"</option>")
+									$("#deptno").append(option)
+								}
+							}
+						}
+					})
+					$("#deptno").change(function(){
+						$("#jobno").empty()
+						var option=$("<option selected='selected'>请选择</option>")
+						$("#jobno").append(option)
+						$.ajax({
+							"url":"/dept/job",
+							"data":"deptno="+$("#deptno").val(),
+							"type":"post",
+							"dataType":"json",
+							"success":function(json){
+								if(json.state==2000){
+									var arr=json.data;
+									for(var i=0;i<json.data.length;i++){
+										var option=$("<option value='"+arr[i].jobno+"'>"+arr[i].jobname+"</option>")
+										$("#jobno").append(option)
+									}
+								}
+							}
+						})
+					})
+					
+					
+					if(json1.state==2000){
+						$("#btn-info").show();
+						var eno = $("<p>员工号:<input type='text' name='eno' placeholder='需要修改的员工号(默认本人)'>");
+						$("#form-change").prepend(eno);
+					}else{
+						//不是管理员锁定一部分input
+						$("#btn-info").hide();
+						$("input[name='mgr']").attr("readOnly","true");
+						$("input[name='sal']").attr("readOnly","true");
+						$("#deptno").attr("disabled", "disabled");
+						$("#jobno").attr("disabled", "disabled");
+						$("input[name='hiredate1']").attr("readOnly","true");
+						$("input[name='birthday1']").attr("readOnly","true");
+						$("input[name='IDcard']").attr("readOnly","true");
+						showInfo("")
+					}
+				},
+				"error":function(){
+					alert("登录超时,请重新登录")
+					location.href="/web/login.html"
+				}
+			})
+			$("#btn-info").click(function(){
+				showInfo($("input[name='eno']").val());
+			})
+			
+			//提交修改资料
+			$("#btn-change").click(function(){
+				$.ajax({
+					"url":"/users/changeinfo",
+					"data":$("#form-change").serialize(),
+					"type":"post",
+					"dataType":"json",
+					"success":function(json){
+						if(json.state==2000){
+							alert("修改成功")
+						}else{
+							alert(json.message)
+						}
+					},
+					"error":function(){
+						alert("登录超时,请重新登录")
+						location.href="/web/login.html"
+					}
+				})
+			})
+			
+			
+			//提交事务
+			$("#btn-subevent").click(function(){
+				$.ajax({
+					"url":"/event/submit",
+					"data":$("#form-subevent").serialize(),
+					"type":"post",
+					"dataType":"json",
+					"success":function(json){
+						if(json.state==2000){
+							alert("提交成功")
+						}else{
+							alert(json.message)
+						}
+					},
+					"error":function(){
+						alert("登录超时,请重新登录")
+						location.href="/web/login.html"
+					}
+				})
+			})
+			//查询自己的事务
+			$("#btn-myevent").click(function(){
+				$("#form-myevent").children("table").remove();
+				var table = $("<table border='1px black solid'><tr><td>员工工号</td><td>请假开始日期</td><td>请假结束日期</td><td>提交日期</td><td>请假理由</td><td>审批状态</td></tr></table>")
+				$("#form-myevent").append(table);
+				$.ajax({
+					"url":"/event/query_submit",
+					"data":$("#form-myevent").serialize(),
+					"type":"post",
+					"dataType":"json",
+					"success":function(json){
+						if(json.state==2000){
+							var list = json.data;
+							for(var i=0;i<json.data.length;i++){
+								var date = new Date(list[i].vacationBegin)
+								var bm = date.getMonth()+1;
+								var bd = date.getDay()+9;
+								var date1 = new Date(list[i].vacationEnd)
+								var em = date1.getMonth()+1;
+								var ed = date1.getDay()+9;
+								var date2 = new Date(list[i].submitTime)
+								var sm = date2.getMonth()+1;
+								var sd = date2.getDay()+16;
+								var tr = $("<tr><td>"+list[i].eno+"</td><td>"+date.getFullYear()+"-"+bm+"-"+bd+"</td><td>"+date1.getFullYear()+"-"+em+"-"+ed+"</td><td>"+date2.getFullYear()+"-"+sm+"-"+sd+"</td><td>"+list[i].vacationReason+"</td><td>"+(list[i].status==0? "待处理":list[i].status==1? "已同意":"已拒绝")+"</td></tr>")
+								table.append(tr);
+							}
+						}else{
+							alert(json.message)
+						}
+					},
+					"error":function(){
+						alert("登录超时,请重新登录")
+						location.href="/web/login.html"
+					}
+				})
+			})
+			//处理事务
+			$("#btn-conevent").click(function(){
+				showList();
+			})
+			//查询签到表
+			$("#btn-signlist").click(function(){
+				$("#form-signlist").children("table").remove();
+				var table = $("<table border='1px black solid'><tr><td>员工工号</td><td>日期</td><td>签到时间</td><td>签退时间</td><td>状态</td></tr></table>")
+				$("#form-signlist").append(table);
+				$.ajax({
+					"url":"/sign/list",
+					"data":$("#form-signlist").serialize(),
+					"type":"post",
+					"dataType":"json",
+					"success":function(json){
+						if(json.state==2000){
+							var list = json.data;
+							for(var i = 0;i <json.data.length;i++){
+								var date = new Date(list[i].date)
+								var sm = date.getMonth()+1;
+								var sd = date.getDay()+16;
+								//获取签到时间
+								var signintime="未打卡";
+								if(list[i].signInTime!=null){
+									var date = new Date(list[i].signInTime);
+									var sih = date.getHours();
+									var sim = date.getMinutes();
+									var sis = date.getSeconds();
+									signintime = (sih>=10?sih:"0"+sih)+":"+(sim>=10?sim:"0"+sim)+":"+(sis>=10?sis:"0"+sis);
+								}
+								//获取签退时间
+								var signouttime="未打卡";
+								if(list[i].signInTime!=null){
+									var date2 = new Date(list[i].signOutTime);
+									var soh = date2.getHours();
+									var som = date2.getMinutes();
+									var sos = date2.getSeconds();
+									signouttime = (soh>=10?soh:"0"+soh)+":"+(som>=10?som:"0"+som)+":"+(sos>=10?sos:"0"+sos);
+								}
+								var temp;
+								if(list[i].status==1){
+									temp = "迟到"
+								} else if(list[i].status==2){
+									temp = "早退"
+								} else if(list[i].status==3){
+									temp = "正常"
+								} else if(list[i].status==4){
+									temp = "旷工"
+								} else if(list[i].status==5){
+									temp = "迟到早退"
+								}
+								var tr = $("<tr><td>"+list[i].eno+"</td><td>"+date.getFullYear()+"-"+sm+"-"+sd+"</td><td>"+signintime+"</td><td>"+signouttime+"</td><td>"+temp+"</td></tr>")
+								table.append(tr)
+							}
+						}else{
+							alert(json.message)
+						}
+					},
+					"error":function(){
+						alert("登录超时,请重新登录")
+						location.href="/web/login.html"
+					}
+				})
+			})
+			
+		})
+		
+		
+		//显示员工信息
+		function showInfo(eno) {
+			$.ajax({
+				"url":"/users/findinfo",
+				"data":"eno="+eno,
+				"type":"post",
+				"dataType":"json",
+				"success":function(json){
+					if(json.state==2000){
+						$("input[name='ename']").attr({"value":json.data.ename});
+						$("input[name='gender']").get(json.data.gender).checked=true;
+						$("input[name='address']").attr({"value":json.data.address});
+						$("input[name='phone']").attr({"value":json.data.phone});
+						$("input[name='email']").attr({"value":json.data.email});
+						$("input[name='nation']").attr({"value":json.data.nation});
+						$("input[name='mgr']").attr({"value":json.data.mgr});
+						$("input[name='sal']").attr({"value":json.data.sal});
+						$("#deptno option[value='"+json.data.deptno+"']").attr("selected","selected");
+						jobList(json.data.jobno);
+						$("input[name='hiredate1']").attr({"value":json.data.hiredate});
+						$("input[name='birthday1']").attr({"value":json.data.birthday});
+						$("input[name='IDcard']").attr({"value":json.data.idcard});
+					}else{
+						alert(json.message)
+					}
+				}
+			})
+		}
+		function jobList(jobno){
+			$("#jobno").empty()
+			var option=$("<option selected='selected'>请选择</option>")
+			$("#jobno").append(option)
+			$.ajax({
+				"url":"/dept/job",
+				"data":"deptno="+$("#deptno").val(),
+				"type":"post",
+				"dataType":"json",
+				"success":function(json){
+					if(json.state==2000){
+						var arr=json.data;
+						for(var i=0;i<json.data.length;i++){
+							var option=$("<option value='"+arr[i].jobno+"'>"+arr[i].jobname+"</option>")
+							$("#jobno").append(option)
+						}
+						$("#jobno option[value='"+jobno+"']").attr("selected","selected");
+					}
+				}
+			})
+		}
+		
+		
+		//显示需处理的事务
+		function showList(){
+				$("#form-conevent").children("table").remove();
+				var table = $("<table border='1px black solid'><tr><td>员工工号</td><td>请假开始日期</td><td>请假结束日期</td><td>提交日期</td><td>请假理由</td><td>同意</td><td>拒绝</td></tr></table>")
+				$("#form-conevent").append(table);
+				$.ajax({
+					"url":"/event/query_console",
+					"data":$("#form-conevent").serialize(),
+					"type":"post",
+					"dataType":"json",
+					"success":function(json){
+						if(json.state==2000){
+							var list = json.data;
+							for(var i=0;i<json.data.length;i++){
+								var date = new Date(list[i].vacationBegin)
+								var bm = date.getMonth()+1;
+								var bd = date.getDay()+9;
+								var date1 = new Date(list[i].vacationEnd)
+								var em = date1.getMonth()+1;
+								var ed = date1.getDay()+9;
+								var date2 = new Date(list[i].submitTime)
+								var sm = date2.getMonth()+1;
+								var sd = date2.getDay()+16;
+								var tr = $("<tr><td>"+list[i].eno+"</td><td>"+date.getFullYear()+"-"+bm+"-"+bd+"</td><td>"+date1.getFullYear()+"-"+em+"-"+ed+"</td><td>"+date2.getFullYear()+"-"+sm+"-"+sd+"</td><td>"+list[i].vacationReason+"</td><td><input type='button' onclick='agree("+list[i].eventid+")' value='同意'></td><td><input type='button' onclick='refuse("+list[i].eventid+")' value='拒绝'></td></tr>")
+								table.append(tr);
+							}
+						}else{
+							alert(json.message)
+						}
+					},
+					"error":function(){
+						alert("登录超时,请重新登录")
+						location.href="/web/login.html"
+					}
+				})
+			}
+		//同意事务
+		function agree(eventid){
+				$.ajax({
+					"url":"/event/console",
+					"data":"eventid="+eventid+"&status=1",
+					"type":"post",
+					"dataType":"json",
+					"success":function(json){
+						if(json.state==2000){
+							alert("处理成功")
+							showList();
+						}else{
+							alert(json.message)
+						}
+					},
+					"error":function(){
+						alert("登录超时,请重新登录")
+						location.href="/web/login.html"
+					}
+				})
+			}
+		//拒绝事务
+		function refuse(eventid){
+				$.ajax({
+					"url":"/event/console",
+					"data":"eventid="+eventid+"&status=2",
+					"type":"post",
+					"dataType":"json",
+					"success":function(json){
+						if(json.state==2000){
+							alert("处理成功")
+							showList();
+						}else{
+							alert(json.message)
+						}
+					},
+					"error":function(){
+						alert("登录超时,请重新登录")
+						location.href="/web/login.html"
+					}
+				})
+			}
+		//签到
+		function sign(state){
+			$.ajax({
+					"url":"/sign/signin",
+					"data":"signState="+state,
+					"type":"post",
+					"dataType":"json",
+					"success":function(json){
+						if(json.state==2000){
+							if(state==1)
+								alert("签到成功")
+							else if(state==2)
+								alert("签退成功")
+						}else{
+							alert(json.message)
+						}
+					},
+					"error":function(){
+						alert("登录超时,请重新登录")
+						location.href="/web/login.html"
+					}
+			})
+		}
+	</script>
+</body>
+</html>

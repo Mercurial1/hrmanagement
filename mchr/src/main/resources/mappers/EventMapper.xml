@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"      
+ "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+<mapper namespace="com.syh.mchr.mapper.EventMapper">
+    <!-- 根据员工工号或领导编号或审批状态查询事件 -->
+    <!-- Event findEvent(@Param("eno")String eno,@Param("mgr")String mgr,@Param("status")Integer status) -->
+	<select id="findEvent"
+        resultType="com.syh.mchr.entity.Event">
+        SELECT 
+            eventid,eno,vacationBegin,vacationEnd,vacationReason,submitTime,mgr,status
+        FROM 
+            event 
+        <if test="eno!=null or mgr!=null or status!=null">WHERE </if>
+            <choose>
+            	<when test="eno!=null and mgr!=null and status!=3">
+            		eno=#{eno} and mgr=#{mgr} and status=#{status}
+            	</when>
+            	<when test="eno!=null and mgr!=null and status==3">
+            		eno=#{eno} and mgr=#{mgr}
+            	</when>
+            	<when test="eno!=null and mgr==null and status!=3">
+            		eno=#{eno} and status=#{status}
+            	</when>
+            	<when test="eno==null and mgr!=null and status!=3">
+            		mgr=#{mgr} and status=#{status}
+            	</when>
+            	<when test="eno!=null and mgr==null and status==3">
+            		eno=#{eno}
+            	</when>
+            	<when test="eno==null and mgr!=null and status==3">
+            		mgr=#{mgr}
+            	</when>
+            	<when test="eno==null and mgr==null and status!=3">
+            		status=#{status}
+            	</when>
+            </choose>
+    </select>
+    
+    <insert id="insertEvent">
+    	INSERT INTO event(
+    		eno,vacationBegin,vacationEnd,vacationReason,submitTime,mgr,status
+    	) VALUES(
+    		#{eno},#{vacationBegin},#{vacationEnd},#{vacationReason},#{submitTime},#{mgr},#{status}
+    	)
+    </insert>
+    
+    <update id="updateStatusAndMgr">
+    	update 
+    		event 
+    	set 
+    		mgr=#{mgr},status=#{status}
+    	where 
+    		eventid=#{eventid}
+    </update>
+    
+    <select id="findByEventid" resultType="com.syh.mchr.entity.Event">
+    	select 
+    		eventid,eno,vacationBegin,vacationEnd,vacationReason,submitTime,mgr,status
+        FROM 
+            event 
+    	where 
+    		eventid=#{eventid}
+    </select>
+    
+</mapper>
